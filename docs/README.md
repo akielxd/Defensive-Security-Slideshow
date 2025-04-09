@@ -1,4 +1,4 @@
-# Project 3: Defensive Security
+# Defensive Security
 
 **By Leo, Michele, Akiel & Preen**
 
