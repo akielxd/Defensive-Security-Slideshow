@@ -1,101 +1,102 @@
-# Defensive Security
+# Defensive Security (Log analysis and Attack Detection)
 
 **By Leo, Michele, Akiel & Preen**
 
 ## Table of Contents
+- [Project Overview](#project-overview)
 - [Monitoring Environment](#monitoring-environment)
-- [Common Information Model (CIM)](#common-information-model-cim)
-- [Windows Logs](#windows-logs)
-- [Apache Logs](#apache-logs)
-- [Attack Analysis](#attack-analysis)
+- [Windows Logs Analysis](#windows-logs-analysis)
+- [Apache Web Server Logs Analysis](#apache-web-server-logs-analysis)
+- [Review Questions](#review-questions)
 - [Summary and Future Mitigations](#summary-and-future-mitigations)
+
+---
+
+## Project Overview
+
+In this project, we analyzed various security logs from a Windows Server and Apache Web Server to detect suspicious activities using tools like Splunk and Elasticsearch. We explored different log sources and created alerts based on log anomalies to understand the security posture of the system.
+
+---
 
 ## Monitoring Environment
 
-### Scenario
-We are a team of SOC analysts working for VSI (Virtual Space Industries). VSI hired us because of rumors that a competitor may have launched cybersecurity attacks with the intention to disrupt business.
+The monitoring environment includes two main log sources:
+- **Windows Server Logs**: Capturing activities on the server and user logins.
+- **Apache Web Server Logs**: Capturing HTTP requests and response codes for web traffic.
 
-Using Splunk, we monitor VSI against these potential attacks by examining the following:
-- Compare VSI’s Windows Server Logs to the attack logs
-- Look at the Apache web server and compare those to their attack logs
+Both log types were analyzed for any unusual activity indicative of a security incident.
 
-## Common Information Model (CIM)
+---
 
-### Purpose
-- **Normalization**: Maps raw data fields to CIM data models using field aliases, calculated fields, lookups, and tags.
-- **Compatibility**: Ensures data from diverse sources can be used with Splunk apps.
-- **Simplification**: Reduces the effort needed to search and analyze data from varied sources.
+## Windows Logs Analysis
 
-### Key Components
-- **Data Models**: Predefined data schemas for different domains.
-- **Field Aliases and Field Extractions**: Maps raw data fields to CIM-compliant names.
-- **Tags**: Applied to events for classification.
-- **Macros and Lookups**: Simplify complex queries and enhance data correlation.
+We used Splunk to analyze Windows Server logs and assess the severity of various events. Key findings include:
+- **Severity Changes**: A significant increase in high-severity events was observed, indicating a potential attack.
+- **Failed Activities**: A decrease in failed activities was noted, while successful activities increased.
+- **Alert Threshold**: Thresholds for failed logins and activities were set to minimize alert fatigue while ensuring significant events are flagged.
 
-### Best Practices
-- Map data to CIM early.
-- Regularly review CIM compliance.
-- Validate data models using tools like the Splunk CIM Validator.
+---
 
-### How it Works
-- Install the Splunk Add-on for CIM.
-- Enable and configure the appropriate data models.
-- Map data sources to the CIM schema using aliases, fields, and tags.
+## Apache Web Server Logs Analysis
 
-### Simple Scenario: Data Normalization with CIM
-Imagine a company collects log data from two systems, but the fields for IP addresses are labeled differently. CIM normalizes these fields into a common field called `ip`.
+The Apache Web Server logs revealed several patterns of suspicious activity:
+- **HTTP Methods**: A drastic increase in POST methods was detected, indicating potential data exfiltration attempts.
+- **Referrer Domains**: Changes in the top 10 referrer domains were observed, signaling possible malicious traffic sources.
+- **International Activity**: A surge in traffic from non-local regions triggered alerts for potential international attacks.
 
-### Logs Analyzed
-- **Windows Logs**: Logs for VSI's main website and Windows Server.
-- **Apache Logs**: Logs for the Apache web server.
+---
 
-## Windows Logs
+## Review Questions
 
-### Reports Designed
-- **ID Number Associated with Specific Signature**: Shows the ID number for Windows activity.
-- **Windows Logs Severity**: Quick overview of the severity levels in the logs.
-- **Success and Failure - Windows**: Displays failed activity levels.
+### Windows Server Log Questions
 
-### Alerts Designed
-- **Suspicious Activity VSI**: Threshold for failed Windows activity reached.
-- **Successful Logins VSI**: Monitors successful login attempts.
-- **VSI Deleted User Accounts**: Monitors the deletion of user accounts.
+#### Report Analysis for Severity
+- **Did you detect any suspicious changes in severity?**
+  Our Splunk report detected a significant increase in high-severity events from 7% in normal logs to 20% in attack logs.
 
-### Dashboards
-- **Windows Logs Dashboard**: Displays various Windows server log data.
+#### Report Analysis for Failed Activities
+- **Did you detect any suspicious changes in failed activities?**
+  We saw a significant decrease in failed activities, while successful activities increased.
 
-## Apache Logs
+#### Alert Analysis for Failed Windows Activity
+- **Did you detect a suspicious volume of failed activity?**
+  Yes, 35 failed Windows activities occurred at 08:00 AM on March 25, 2020.
 
-### Reports Designed
-- **HTTP Methods**: Provides insight into the types of HTTP methods used.
-- **Top 10 Domains**: Shows the top 10 domains referring to VSI's website.
+#### Alert Analysis for Successful Logins
+- **Did you detect a suspicious volume of successful logins?**
+  Yes, there was a suspicious lack of user logins. At 02:00 AM on March 25, 2020, there were 16 successful logins, dropping to 4 by 12:00 PM.
 
-### Alerts Designed
-- **HTTP POST Count Alert**: Alerts when POST requests exceed a threshold.
-- **International Activity Alert**: Flags activity from countries outside the U.S.
+#### Dashboard Analysis for Time Chart of Signatures
+- **Does anything stand out as suspicious?**
+  Yes, two significant increases were noted in the signatures for "An attempt was made to reset an account password" and "A user account was locked out."
 
-### Dashboards
-- **Apache Logs Dashboard**: Displays HTTP methods, error codes, and more.
+### Apache Web Server Log Questions
 
-## Attack Analysis
+#### Report Analysis for HTTP Methods
+- **Did you detect any suspicious changes in HTTP methods?**
+  Yes, POST methods had a drastic increase, potentially indicating an attack vector.
 
-### Attack Summary – Windows
-- Increased attempts to reset account passwords and lock out users.
-- Suspicious activity from user_a and user_k.
+#### Report Analysis for Referrer Domains
+- **Did you detect any suspicious changes in referrer domains?**
+  Yes, suspicious changes were observed in the top 10 referrer domains.
 
-### Attack Summary – Apache
-- High volumes of international activity detected between 8pm and 9pm.
-- Suspicious POST activity and HTTP methods detected during an attack.
+#### Alert Analysis for International Activity
+- **Did you detect a suspicious volume of international activity?**
+  Yes, international activity peaked at 939 hits at 08:00 AM on March 25, 2020.
+
+#### Dashboard Analysis for Cluster Map
+- **Does anything stand out as suspicious?**
+  Yes, there was a high volume of activity from cities like Kyiv, Kharkiv, and Lvov in Ukraine.
+
+
+---
 
 ## Summary and Future Mitigations
 
-### Project Summary
-On March 25, 2020, VSI faced multiple attacks on their Windows and Apache servers, including brute force password attacks from various regions globally.
+This project highlights the importance of continuously monitoring security logs to detect suspicious activity in real-time. Based on the findings, we recommend the following mitigations:
+- **Review alert thresholds**: Consider creating multiple levels of alerts to reduce alert fatigue while ensuring the SOC team is notified of critical activities.
+- **Increase logging granularity**: Collect more detailed logs to better detect and trace suspicious activities, especially in high-risk areas like HTTP POST methods and international activity.
+- **Implement behavior analytics**: Use machine learning techniques to identify anomalies in user activity, especially around logins and account-related actions.
 
-### Future Mitigations
-- Implement two-factor authentication.
-- Lock users out after a set number of failed login attempts.
-
-## Conclusion
-This project demonstrates the importance of monitoring network traffic and logs for suspicious activity to protect business systems from cyber threats.
+---
 
